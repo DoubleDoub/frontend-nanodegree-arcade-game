@@ -23,7 +23,8 @@ var Engine = (function(global) {
         win = global.window,
         canvas = doc.createElement('canvas'),
         ctx = canvas.getContext('2d'),
-        lastTime;
+        lastTime,
+        gameStatus;
 
     canvas.width = 505;
     canvas.height = 606;
@@ -47,7 +48,6 @@ var Engine = (function(global) {
          */
         update(dt);
         render();
-
         /* Set our lastTime variable which is used to determine the time delta
          * for the next time this function is called.
          */
@@ -55,18 +55,33 @@ var Engine = (function(global) {
 
         /* Use the browser's requestAnimationFrame function to call this
          * function again as soon as the browser is able to draw another frame.
+         * And the game is not game is over. 
          */
-        win.requestAnimationFrame(main);
+        if ( !gameStatus.gameOver){
+            win.requestAnimationFrame(main);
+        } else {
+            win.requestAnimationFrame(GameOver);
+        }
+
     };
 
+    function GameOver(){
+        ctx.font = "72px sans-serif";
+        ctx.fillStyle = "white";
+        ctx.fillText("Game Over", 75 , 300);
+        ctx.lineWidth = 2; 
+        ctx.strokeStyle = "black";
+        ctx.strokeText("Game Over", 75, 300);
+    }
     /* This function does some initial setup that should only occur once,
      * particularly setting the lastTime variable that is required for the
      * game loop.
      */
     function init() {
-        reset();
         lastTime = Date.now();
+        gameStatus = {lifes: 5, gameOver: false};
         main();
+
     }
 
     /* This function is called by main (our game loop) and itself calls all
@@ -80,7 +95,55 @@ var Engine = (function(global) {
      */
     function update(dt) {
         updateEntities(dt);
-        // checkCollisions();
+        checkGameRules();
+    }
+
+    /**
+     * This function is called by the update function after all entities are updated.
+     * If rule is being violated the game will reset.
+     */
+    function checkGameRules(){
+        // # of lifes before checking rules
+        numLifes = gameStatus.lifes;
+        //rule 1 player is not allowed on water blocks.
+        if ('row' in ctx){
+            if (ctx.row[Math.floor(global.player.y / 83)] == 'images/water-block.png' ) {
+                gameStatus.lifes = gameStatus.lifes - 1;
+                App.newCharacter('horn');
+            }
+        }
+
+        //rule 2 check Collisions (player entity is not allowed to touch enemy entities)
+        for (var i = allEnemies.length - 1; i >= 0; i--) {
+            if ((allEnemies[i].x +101 - 20 ) >= (global.player.x) &&
+                (allEnemies[i].x) < (global.player.x + 101 - 20) &&
+                (allEnemies[i].y === global.player.y)) {
+                gameStatus.lifes = gameStatus.lifes - 1;
+        }
+
+        // Did the player lose a life?
+        if (gameStatus.lifes < numLifes){
+            // decide what to do next
+            switch(gameStatus.lifes){
+                case(0):
+                    gameStatus.gameOver = true;
+                    break;
+                case(4):
+                    App.newCharacter('princess');
+                    break;
+                case(3):
+                    App.newCharacter('cat');
+                    break;
+                case(2):
+                    App.newCharacter('horn');
+                    break;
+                case(1):
+                    App.newCharacter('pink');
+                    break;
+                }
+        } 
+
+        };
     }
 
     /* This is called by the update function  and loops through all of the
@@ -104,6 +167,10 @@ var Engine = (function(global) {
      * they are just drawing the entire screen over and over.
      */
     function render() {
+        //clear canvas
+        ctx.clearRect(0, 0, ctx.canvas.width, canvas.height );
+        ctx.row = [];
+
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
@@ -119,11 +186,12 @@ var Engine = (function(global) {
             numCols = 5,
             row, col;
 
+
         /* Loop through the number of rows and columns we've defined above
          * and, using the rowImages array, draw the correct image for that
          * portion of the "grid"
          */
-        for (row = 0; row < numRows; row++) {
+        for (row = 0; row < numRows; row++) {      
             for (col = 0; col < numCols; col++) {
                 /* The drawImage function of the canvas' context element
                  * requires 3 parameters: the image to draw, the x coordinate
@@ -134,9 +202,9 @@ var Engine = (function(global) {
                  */
                 ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
             }
+            // make it possible for the rest of the app to know what image is used for a row
+            ctx.row[row] = rowImages[row];
         }
-
-
         renderEntities();
     }
 
@@ -151,7 +219,6 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.render();
         });
-
         player.render();
     }
 
@@ -160,8 +227,10 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      */
     function reset() {
-        // noop
+        //noop
     }
+
+
 
     /* Go ahead and load all of the images we know we're going to need to
      * draw our game level. Then set init as the callback method, so that when
@@ -172,7 +241,12 @@ var Engine = (function(global) {
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
-        'images/char-boy.png'
+        'images/char-boy.png',
+        'images/char-princess-girl.png',
+        'images/char-cat-girl.png',
+        'images/char-horn-girl.png',
+        'images/char-pink-girl.png',
+        'images/Selector.png',
     ]);
     Resources.onReady(init);
 
