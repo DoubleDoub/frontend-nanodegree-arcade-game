@@ -63,7 +63,7 @@ var Engine = (function(global) {
             win.requestAnimationFrame(GameOver);
         }
 
-    };
+    }
 
     function GameOver(){
         ctx.font = "72px sans-serif";
@@ -143,7 +143,7 @@ var Engine = (function(global) {
                 }
         } 
 
-        };
+        }
     }
 
     /* This is called by the update function  and loops through all of the
