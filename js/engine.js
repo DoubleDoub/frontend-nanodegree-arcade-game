@@ -80,6 +80,7 @@ var Engine = (function(global) {
     function init() {
         lastTime = Date.now();
         gameStatus = {lifes: 5, gameOver: false};
+        App.start();
         main();
 
     }

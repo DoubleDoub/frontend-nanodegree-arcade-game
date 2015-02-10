@@ -168,5 +168,3 @@ var App = function(global) {
     return exports;
 
 }(this);
-
-App.start();
