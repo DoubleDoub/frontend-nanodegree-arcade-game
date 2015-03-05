@@ -1,23 +1,30 @@
+/**
+ * IIFFE initialize the application  
+ * @param {object} global the global object in browser this = document.window
+ * @return {object} methods to be used outside the function scope 
+ * this happens in engine.js
+ */
 var App = function(global) {
+    // object that is going to be exported.
     var exports = {};
     /**
-     * Enemy NPC 
+     * Enemy NPC
      * @param {string}(optional) type     type of enemy e.g. bug
-     * @param {number}(optional) velocity how many pixels per frame 
+     * @param {number}(optional) velocity how many pixels per frame
      */
     var Enemy = function(type, velocity) {
         var row = Math.floor(Math.random() * 3 + 1);
-        
+
         //set default values for the enemy
         velocity = velocity || Math.random() * 100;
         // make enemy go faster then that.
         this.velocity = velocity + 75;
-        
+
         // The x y coordinates of the starting point of the enemy
-        this.x = -101;
+        this.x = - 101;
         this.y = row * 83;
 
-        switch(type){
+        switch(type) {
             default:
                 this.sprite = 'images/enemy-bug.png';
         }
@@ -72,7 +79,7 @@ var App = function(global) {
                 this.sprite = 'images/char-pink-girl.png';
                 break;
         }
-        
+
         //start coordinates
         this.y = 5 * 83  ;
         this.x = 2 * 101;
@@ -87,7 +94,7 @@ var App = function(global) {
     Player.prototype.update = function(x, y) {
         x = (x || 0) + this.x;
         y = (y || 0) + this.y;
-        
+
         //prevent player from moving outside the canvas
         if (x < ctx.canvas.width && x >= 0  && y < ctx.canvas.height - 2 * 83 && y >= -20) {
             this.x = x ;
@@ -98,19 +105,19 @@ var App = function(global) {
     /**
      * render player sprite on canvas.
      */
-    Player.prototype.render = function(){
+    Player.prototype.render = function() {
         ctx.drawImage(Resources.get(this.sprite), this.x, this.y -20);
     };
 
     /**
      * handle control buttons/key presses
-     * @param  {string} eg up down left right.  
+     * @param  {string} eg up down left right.
      * @return {void}
      */
-    Player.prototype.handleInput = function(key){
+    Player.prototype.handleInput = function(key) {
         var x, y;
 
-        switch(key){
+        switch(key) {
             case ('up'):
                 y =  -83;
                 break;
@@ -143,25 +150,26 @@ var App = function(global) {
 
     /**
      * Function to start the game
-     * @param  {object} global the global object(in a browser this is the window object)
-     * @return {void} 
+     * @return {void}
      */
-    exports.start = function(){
+    exports.start = function() {
         // Make entities globally available for the game Engine
         allEnemies = [];
         global.allEnemies = allEnemies;
-        global.player = new Player(); 
+        global.player = new Player();
 
         allEnemies.push(new Enemy());
         allEnemies.push(new Enemy());
         allEnemies.push(new Enemy());
         allEnemies.push(new Enemy());
         allEnemies.push(new Enemy());
- 
         console.log('starting the game');
     };
-
-
+    /**
+     * replaces playable character on screen. 
+     * @param  {[type]} name [description]
+     * @return {[type]}      [description]
+     */
     exports.newCharacter = function(name){
         global.window.player = new Player(name);
     };

@@ -54,22 +54,25 @@ var Engine = (function(global) {
         lastTime = now;
 
         /* Use the browser's requestAnimationFrame function to call this
-         * function again as soon as the browser is able to draw another frame.
-         * And the game is not game is over. 
+         * function again as soon as the browser is able to draw another frame
+         * and the gamestatus.gameover == false.
          */
         if ( !gameStatus.gameOver){
             win.requestAnimationFrame(main);
         } else {
-            win.requestAnimationFrame(GameOver);
+            win.requestAnimationFrame(gameOver);
         }
 
     }
-
-    function GameOver(){
+    /**
+     * Paint string "Game Over" on the canvas
+     * @return {void}
+     */
+    function gameOver() {
         ctx.font = "72px sans-serif";
         ctx.fillStyle = "white";
         ctx.fillText("Game Over", 75 , 300);
-        ctx.lineWidth = 2; 
+        ctx.lineWidth = 2;
         ctx.strokeStyle = "black";
         ctx.strokeText("Game Over", 75, 300);
     }
@@ -80,7 +83,9 @@ var Engine = (function(global) {
     function init() {
         lastTime = Date.now();
         gameStatus = {lifes: 5, gameOver: false};
+        //start the game
         App.start();
+        //start animations.
         main();
 
     }
@@ -103,47 +108,48 @@ var Engine = (function(global) {
      * This function is called by the update function after all entities are updated.
      * If rule is being violated the game will reset.
      */
-    function checkGameRules(){
+    function checkGameRules() {
         // # of lifes before checking rules
         numLifes = gameStatus.lifes;
         //rule 1 player is not allowed on water blocks.
-        if ('row' in ctx){
+        if ('row' in ctx) {
             if (ctx.row[Math.floor(global.player.y / 83)] == 'images/water-block.png' ) {
                 gameStatus.lifes = gameStatus.lifes - 1;
                 App.newCharacter('horn');
             }
         }
 
-        //rule 2 check Collisions (player entity is not allowed to touch enemy entities)
+        //rule 2 check Collisions (player entity is not allowed to touch enemy
+        // entities) collision is detected by measuring the non transparent
+        // dimension of image both left and right sides
         for (var i = allEnemies.length - 1; i >= 0; i--) {
-            if ((allEnemies[i].x +101 - 20 ) >= (global.player.x) &&
+            if ((allEnemies[i].x + 101 - 20 ) >= (global.player.x) &&
                 (allEnemies[i].x) < (global.player.x + 101 - 20) &&
                 (allEnemies[i].y === global.player.y)) {
                 gameStatus.lifes = gameStatus.lifes - 1;
-        }
+            }
 
-        // Did the player lose a life?
-        if (gameStatus.lifes < numLifes){
-            // decide what to do next
-            switch(gameStatus.lifes){
-                case(0):
-                    gameStatus.gameOver = true;
-                    break;
-                case(4):
-                    App.newCharacter('princess');
-                    break;
-                case(3):
-                    App.newCharacter('cat');
-                    break;
-                case(2):
-                    App.newCharacter('horn');
-                    break;
-                case(1):
-                    App.newCharacter('pink');
-                    break;
+            // Did the player lose a life?
+            if (gameStatus.lifes < numLifes) {
+                // decide what to do next
+                switch(gameStatus.lifes) {
+                    case(0):
+                        gameStatus.gameOver = true;
+                        break;
+                    case(4):
+                        App.newCharacter('princess');
+                        break;
+                    case(3):
+                        App.newCharacter('cat');
+                        break;
+                    case(2):
+                        App.newCharacter('horn');
+                        break;
+                    case(1):
+                        App.newCharacter('pink');
+                        break;
                 }
-        } 
-
+            }
         }
     }
 
@@ -192,7 +198,7 @@ var Engine = (function(global) {
          * and, using the rowImages array, draw the correct image for that
          * portion of the "grid"
          */
-        for (row = 0; row < numRows; row++) {      
+        for (row = 0; row < numRows; row++) {
             for (col = 0; col < numCols; col++) {
                 /* The drawImage function of the canvas' context element
                  * requires 3 parameters: the image to draw, the x coordinate
